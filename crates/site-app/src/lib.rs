@@ -161,6 +161,7 @@ pub struct Contact {
   note:       Option<String>,
 }
 
+#[cfg(feature = "ssr")]
 fn handle_error(e: impl std::fmt::Debug) -> ServerFnError {
   let error = format!("failed to upload contact: {e:?}");
   logging::error!("{}", error);
