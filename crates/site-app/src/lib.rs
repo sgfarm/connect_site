@@ -10,7 +10,7 @@ pub fn App() -> impl IntoView {
   view! {
     <Stylesheet id="leptos" href="/pkg/site.css"/>
 
-    <Title text="A template app"/>
+    <Title text="Solid Ground Connect"/>
     <Html lang="en" />
     <Meta charset="utf-8"/>
     <Meta name="viewport" content="width=device-width, initial-scale=1"/>
