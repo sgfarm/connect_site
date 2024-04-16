@@ -8,7 +8,10 @@ pub fn App() -> impl IntoView {
   provide_meta_context();
 
   view! {
+    <Style>{include_str!("../style/fonts.css")}</Style>
     <Stylesheet id="leptos" href="/pkg/site.css"/>
+    <leptos_meta::Link rel="preload" href="/fonts/inter.ttf" as_="font" type_="font/ttf" crossorigin="anonymous" />
+    <leptos_meta::Link rel="preload" href="/fonts/anton.ttf" as_="font" type_="font/ttf" crossorigin="anonymous" />
 
     <Title text="Solid Ground Connect"/>
     <Html lang="en" />

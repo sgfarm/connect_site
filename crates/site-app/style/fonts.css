@@ -1,0 +1,15 @@
+@font-face {
+  font-family: 'anton';
+  src: url('/fonts/anton.ttf');
+  font-display: swap;
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'inter';
+  src: url('/fonts/inter.ttf');
+  font-display: swap;
+  font-weight: 100 900;
+  font-style: normal;
+}
