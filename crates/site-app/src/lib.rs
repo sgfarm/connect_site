@@ -1,6 +1,6 @@
 use leptos::*;
 use leptos_meta::*;
-use leptos_router::{Route, Router, Routes};
+use leptos_router::{ActionForm, Route, Router, Routes};
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -21,6 +21,7 @@ pub fn App() -> impl IntoView {
     <Router>
       <Routes>
         <Route path="/" view=ConnectForm />
+        <Route path="/thankyou" view=ThankYouPage />
       </Routes>
     </Router>
   }
@@ -50,13 +51,25 @@ pub fn PageWrapper(children: Children) -> impl IntoView {
 }
 
 #[component]
+pub fn ThankYouPage() -> impl IntoView {
+  view! {
+    <PageWrapper>
+      <p class="text-xl max-w-prose">
+        "Thank you so much for sending us your information. We'll be in contact soon. Have a blessed day!"
+      </p>
+    </PageWrapper>
+  }
+}
+
+#[component]
 pub fn ConnectForm() -> impl IntoView {
+  let upload_contact = create_server_action::<UploadContact>();
+
   view! {
     <PageWrapper>
       <div class="max-w-xl lg:max-w-3xl">
-        <a class="block text-blue-600" href="#">
-          <span class="sr-only">Home</span>
-          <a class="font-anton text-4xl" href="https://solidgroundfarm.org" target="_blank" referer="none">SGF</a>
+        <a class="block" href="https://solidgroundfarm.org" target="_blank" referer="none">
+          <p class="font-anton text-4xl">SGF</p>
         </a>
 
         <h1 class="mt-6 text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl">
@@ -67,7 +80,7 @@ pub fn ConnectForm() -> impl IntoView {
           "Provide your information below and we'll be in touch. Thank you so much for connecting with Solid Ground!"
         </p>
 
-        <form action="#" class="mt-8 grid grid-cols-6 gap-6">
+        <ActionForm action=upload_contact class="mt-8 grid grid-cols-6 gap-6">
           <div class="col-span-6 sm:col-span-3">
             <label for="FirstName" class="block text-sm font-medium text-gray-700">
               "First Name"
@@ -133,8 +146,64 @@ pub fn ConnectForm() -> impl IntoView {
               "Submit your Information"
             </button>
           </div>
-        </form>
+        </ActionForm>
       </div>
     </PageWrapper>
   }
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub struct Contact {
+  first_name: Option<String>,
+  last_name:  Option<String>,
+  email:      Option<String>,
+  phone:      Option<String>,
+  note:       Option<String>,
+}
+
+fn handle_error(e: impl std::fmt::Debug) -> ServerFnError {
+  let error = format!("failed to upload contact: {e:?}");
+  logging::error!("{}", error);
+  ServerFnError::new(error)
+}
+
+#[server]
+pub async fn upload_contact(
+  first_name: Option<String>,
+  last_name: Option<String>,
+  email: Option<String>,
+  phone: Option<String>,
+  note: Option<String>,
+) -> Result<(), ServerFnError> {
+  let contact = Contact {
+    first_name,
+    last_name,
+    email,
+    phone,
+    note,
+  };
+
+  let contents = serde_json::to_string(&contact).map_err(handle_error)?;
+
+  use object_store::{
+    aws::{AmazonS3, AmazonS3Builder},
+    path::Path,
+    ObjectStore,
+  };
+
+  let store: AmazonS3 = AmazonS3Builder::from_env()
+    .with_bucket_name("sgfarm-connect")
+    .build()
+    .map_err(handle_error)?;
+  store
+    .put(
+      &Path::from(format!("/{}.json", ulid::Ulid::new())),
+      contents.into(),
+    )
+    .await
+    .map_err(handle_error)?;
+
+  leptos_axum::redirect("/thankyou");
+
+  Ok(())
 }

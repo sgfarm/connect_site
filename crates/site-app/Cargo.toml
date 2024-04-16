@@ -11,12 +11,15 @@ leptos_meta.workspace = true
 leptos_router.workspace = true
 leptos_axum = { workspace = true, optional = true }
 
-ulid = { version = "1.1.2", optional = true }
+serde = { version = "1" }
+ulid = { version = "1", optional = true }
+serde_json = { version = "1", optional = true }
+object_store = { version = "0.9", optional = true, features = [ "aws" ] }
 
 [features]
 default = []
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
 ssr = [
   "leptos/ssr", "leptos/tracing", "leptos_meta/ssr", "leptos_router/ssr",
-  "dep:leptos_axum", "dep:ulid",
+  "dep:leptos_axum", "dep:ulid", "dep:serde_json", "dep:object_store",
 ]
